@@ -1,0 +1,57 @@
+- add hook to dhclient
+
+- On call:
+    * Pegar ip atual
+    * Atualizar ips das interfaces
+    * Atualizar rotas
+    * Atualizar arquivos com ips:
+        + /etc/network/interfaces
+        + /etc/radvd.conf
+        + /etc/dhcp/dhcpd6.conf
+        + /etc/ndppd.conf
+
+hook feito com metodo c do kernel:
+https://stackoverflow.com/questions/8542253/how-to-get-notified-for-ip-address-changes-automatically?noredirect=1&lq=1
+
+Listar ips
+ifconfig usb0
+usb0: flags=4675<UP,BROADCAST,RUNNING,ALLMULTI,MULTICAST>  mtu 1500
+        inet 192.168.100.7  netmask 255.255.255.0  broadcast 192.168.100.255
+        inet6 2001:1284:f01c:d89:20e:c6ff:fe30:f34e  prefixlen 128  scopeid 0x0<global>
+        inet6 fe80::20e:c6ff:fe30:f34e  prefixlen 64  scopeid 0x20<link>
+        ether 00:0e:c6:30:f3:4e  txqueuelen 1000  (Ethernet)
+        RX packets 20386340  bytes 19643959876 (18.2 GiB)
+        RX errors 3297307  dropped 14106  overruns 0  frame 3297307
+        TX packets 8244630  bytes 2248520442 (2.0 GiB)
+        TX errors 17100  dropped 0 overruns 0  carrier 0  collisions 0
+
+Atualizar ip:
+ifconfig usb0 del 2001:1284:f01c:d89:20e:c6ff:fe30:f34e/128
+ifconfig usb0 add 2001:1284:f01c:d89:20e:c6ff:fe30:f34e/128
+
+Listar rotas:
+route -6
+Kernel IPv6 routing table
+Destination                    Next Hop                   Flag Met Ref Use If
+localhost/128                  [::]                       U    256 2     0 lo
+2001:1284:f01c:d89:20e:c6ff:fe30:f34e/128 [::]                       U    256 1     0 usb0
+2001:1284:f01c:d89::/64        [::]                       UAe  256 2     0 usb0
+2001:1284:f01c:d89::/64        [::]                       U    1024 3     0 eth0
+2001:1284:f01c:d420:25fa:f58d:9a3:359f/128 [::]                       U    1024 2     0 eth0
+fe80::/64                      [::]                       U    256 5     0 eth0
+fe80::/64                      [::]                       U    256 5     0 usb0
+[::]/0                         fe80::1                    UGDAe 1024 5     0 usb0
+localhost/128                  [::]                       Un   0   7     0 lo
+2001:1284:f01c:d89::/128       [::]                       Un   0   5     0 eth0
+2001:1284:f01c:d89:20e:c6ff:fe30:f34e/128 [::]                       Un   0   2     0 usb0
+2001:1284:f01c:d89:dea6:32ff:fe5a:dce8/128 [::]                       Un   0   3     0 eth0
+fe80::/128                     [::]                       Un   0   5     0 eth0
+fe80::/128                     [::]                       Un   0   3     0 usb0
+fe80::20e:c6ff:fe30:f34e/128   [::]                       Un   0   4     0 usb0
+fe80::dea6:32ff:fe5a:dce8/128  [::]                       Un   0   6     0 eth0
+ff00::/8                       [::]                       U    256 6     0 eth0
+ff00::/8                       [::]                       U    256 5     0 usb0
+[::]/0                         [::]                       !n   -1  1     0 lo
+
+Atualizar rotas:
+ip -6 route del 2001:1284:f01c:d89::/64 dev usb0

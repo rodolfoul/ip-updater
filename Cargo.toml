@@ -1,0 +1,17 @@
+[package]
+name = "ip-updater"
+version = "0.1.0"
+edition = "2021"
+
+build = "build.rs"
+
+[dependencies]
+nix = "0.9.0"
+ctrlc = "3.2.1"
+chrono = "0.4.19"
+pnet = "0.28.0"
+eui48 = "1.1.0"
+regex = "1.5.4"
+
+[build-dependencies]
+cc = "1.0.71"
